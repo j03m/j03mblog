@@ -30,9 +30,9 @@ From here we define a object on global, give it an index for the filename in que
 ```javascript
 if (!__cov_uO9imRK7GElztprJdG52mw.__your_variable__) { __cov_uO9imRK7GElztprJdG52mw.__your_variable__ = {}; }
 __cov_uO9imRK7GElztprJdG52mw = __cov_uO9imRK7GElztprJdG52mw.__your_variable__;
-if (!(__cov_uO9imRK7GElztprJdG52mw['binheap.js'])) {
-   __cov_uO9imRK7GElztprJdG52mw['binheap.js'] = {
-    "path": "binheap.js",
+if (!(__cov_uO9imRK7GElztprJdG52mw['urfile.js'])) {
+   __cov_uO9imRK7GElztprJdG52mw['urfile.js'] = {
+    "path": "urfile.js",
     "s": {
         "1": 0,
         "2": 0,
