@@ -123,7 +123,7 @@ Here is a jsperf that executes the following:
 http://jsperf.com/defined-function-vs-in-loop-function
 
 
-The difference is pretty staggering. For Chrome on my mac book air the results were 792,625 operations vs 30,155. And judging by the inline test history this seems to be the case for all of it.
+The difference is pretty staggering. For Chrome on my mac book air the results were 792,625 operations vs 30,155. And judging by the inline test history this seems to be the case for all other browsers.
 
 
 We can expand that test to use function expressions and verify that behavior is about the creation of a function on each loop iteration:
@@ -132,4 +132,6 @@ http://jsperf.com/defined-function-vs-in-loop-function/3
 
 ```
 
-Here we see comparable execution times for a high level function expression and declaration vs an inloop anon an inloop function expression. The one strange exception seems to be the inloop function declaration which performs on par with the other. However, one would argue this doesn't do much for readability.
+Here we see comparable execution times for a high level function expression and declaration vs an inloop anon an inloop function expression. The one strange exception seems to be the inloop function declaration which performs on par with the other.  But as it turns out when declaring a function in this manner the function is defined at parse time and hoisted making it analagous to defining the function on the outside.
+
+
