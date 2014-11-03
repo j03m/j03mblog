@@ -5,9 +5,9 @@ I've generally gotten two questions that are inter-related enough with enough fr
 
 They are:
 
-#1 - Why does jshint scold me for creating functions within a loop?
+1 - Why does jshint scold me for creating functions within a loop?
 
-#2 - Why do the functions I use in this loop not seem to have the correct values?
+2 - Why do the functions I use in this loop not seem to have the correct values?
 
 Answer to some extent is that jshint is trying to protect you from #2 (although there are other reasons).
 
