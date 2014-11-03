@@ -130,8 +130,6 @@ We can expand that test to use function expressions and verify that behavior is 
 
 http://jsperf.com/defined-function-vs-in-loop-function/3
 
-```
-
 Here we see comparable execution times for a high level function expression and declaration vs an inloop anon an inloop function expression. The one strange exception seems to be the inloop function declaration which performs on par with the other.  But as it turns out when declaring a function in this manner the function is defined at parse time and hoisted making it analagous to defining the function on the outside.
 
 
