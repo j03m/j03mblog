@@ -1,4 +1,4 @@
-js_closures_and_references_and_loops
+js closures and references and loops
 ==============================
 
 I've generally gotten two questions that are inter-related enough with enough frequency that it probably warranted a review.
