@@ -1,5 +1,7 @@
-First thing you need to understand if you don't have a full appreciate the problems with stack traces in js is this scenario.
+## I suppose the first thing you need to understand are basic problems with stack traces in js.
 
+
+Look at this scenario:
 
 This block of code:
 ```javascript
@@ -93,7 +95,8 @@ a();
 Why not? 
 
 
-* There is a difference between Error and Exception. You can THROW anything. But you should only throw Objects. Specifically, you should only throw errors.
+## There is a difference between Error and Exception. You can THROW anything. But you should only throw Objects. Specifically, you should probably only throw errors.
+
 Theses are all exceptions:
 
 ```javascript
@@ -113,19 +116,16 @@ Arguably, if you use throw you should be throwing Errors.
 throw new Error("omg help!");
 ```
 
-Why? Well, Error buys you a lot.
 
 * If you are using try/catch you really need a good reason.
 
 Unlike other languages, there is very little reason to use try/catch is javascript. The rule of thumb is that unless its some external validation function. Like JSON.parse.
 
 * It helps to thing about errors in two categories
-    Operational Problems with correct programs
-    Programmer Errors - ie, bugs in the program.
 
-* You shouldn't try to centralize error handling. Any code that is doing something that could potentially have an operational problem needs to be aware 
-
-* approach to handling errors
+    Operational Problems with correct programs  - try/catch is okay but ill advised, your program should know and handle the operational errors it needs to deal with or it should crash
+    Programmer Errors - ie, bugs in the program - you should never attempt to patch these with try/catch as you leave your program in an unknown state. The best case scenario here is potentially for a log and crash.
+* Approach to handling errors
     
     retry - how often? how many times? Exponential back off. be careful. Client retry->worker retry->service retry->db failure
     propogate- most likley, if you know this issue isn't going to fix itself any time soon propogate, crash. 
@@ -177,83 +177,49 @@ Unlike other languages, there is very little reason to use try/catch is javascri
     ^ This is totally useless.
       JSON.parse(undefined)
       
-    
-    
+
     any attempt to recover should be limited to log/crash - ie a last ditch effort to say good bye
+
 * Getting errors back to your callers
     
     > If you don't know what errors can happen or don't know what they mean, then your program cannot be correct except by accident. 
-    
-    * throw - generally don't do this.
-    
+
+    * What can happen when I call a worker?
+    * What can happen with a client component?
+    * DMP?
+
     * callbacks - use a node style callback callback(err, result) pass new Error() to the callback
     
     * promises - use a promise driven api, fail the promise and pass an error that way
     
     * events - 'error' events - complex objects with lots of statefulness should use this pattern. Example socket.
-    
-    * Is the error an operational error or a programmer error?
-    * Is the function itself synchronous or asynchronous?
-    
+
     Most common: Operation error in async - callback/promise
     Complex stateful - event emitter
     
-    If I can deliver an operation error asynchronously and synchronously - only use the callback/promise. Don't mix methods. In our world, your consumer should NEVER need to use try catch. Ever.
-    
-    For programmer errors that are irrecoverable - for example I invoke your function and fail to supply a callback - throw synchronously.
-    
-    
+    Use callbacks and return codes where possible - If I can deliver an operation error asynchronously and synchronously - only use the callback/promise. Don't mix methods.
+    In our world, your consumer should NEVER need to use try catch. Ever.
+    When is it okay for your module to throw? - For programmer errors that are irrecoverable - for example I invoke your function and fail to supply a callback - throw synchronously.
     
     
-    
-    
-    
+    It's generally understood that if a "unknown/uncaught" exception occurs in your code the program *should* crash. However, this also assumes that after the crash you have some mechanism of determine where and how the failure occurred and can thereby get enough information to correct it. In the case of our async crash, that is much more difficult. So the focus of this article will be:
 
+    General JS Stuff:
+    * How to structure your code maximize the tracability of a crash
+    * When and how to use try/catch, when not to
 
-It's generally understood that if a "unknown/uncaught" exception occurs in your code the program *should* crash. However, this also assumes that after the crash you have some mechanism of determine where and how the failure occurred and can thereby get enough information to correct it. In the case of our async crash, that is much more difficult. So the focus of this article will be:
+    Rplus JS Stuff:
+    x How do these things apply to workers?
+    x Long stack trace, enable in promises, grab manually
+    x wrapping is okay if - the original error is unchanged. how to wrap?
 
-General JS Stuff:
-* How to structure your code maximize the tracability of a crash
-* When and how to use try/catch, when not to
+    http://jsperf.com/long-stacks3/edit
 
-RPlus JS Stuff:
-x How do these things apply to workers?
-
-
+    Show off - a programmer error eaten by a try/catch
 
 /* Basics:
     Sync code - return the error
     Async Error - return a code
     Eventful code - use an event emitter
 */
-
-/*
-    What is our equivalent of a domain?
-*/
-
-
-/*
-you may get duplicate callbacks
-you may not get a callback at all (lost in limbo)
-you may get out-of-band errors
-emitters may get multiple “error” events
-missing “error” events sends everything to hell
-often unsure what requires “error” handlers
-“error” handlers are very verbose
-callbacks suck
-
-Error: getaddrinfo EADDRINFO
-*/
-
-
-Long stack traces - making life easier
-    In promises
-    Without promises
-    
-
-Use the name property in your errors
-    BadSomethingError
-
-Wrapping is good if tghe original error is there and unchanged
-
 
