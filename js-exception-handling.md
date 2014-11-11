@@ -1,6 +1,6 @@
 # Exception + Error handling in javascript
 
-The following will walk through the basics of exceptions and errors in javascript. Most of the article will go over the basics of structuring your code for errors in a sync/async world and go over some patterns and anti-patterns you should be aware of while writing js.
+The following will walk through the basics of exceptions and errors in javascript. Most of the article will go over the basics of structuring your code for errors in a sync/async world and go over some patterns and anti-patterns you should be aware of while writing js. I'm purposely NOT going to go into domains in this article as they're currently only available in node and I'd like this guide to be as generic as possible.
 
 ## I suppose the first thing you need to understand are basic problems with stack traces in js.
 
@@ -39,7 +39,7 @@ Error: oh noes!
     at Timer.listOnTimeout [as ontimeout] (timers.js:110:15)
 ```
 
-If this ends up in your log or console, you're a happy programmer. But, what happens when things get more complex and there are async context's involved:
+If this ends up in your log or console, you are a happy programmer. But, what happens when things get more complex and there are async contexts involved:
 
 ```javascript
 function a(){
@@ -68,7 +68,7 @@ Error: oh noes!
     at Timer.listOnTimeout [as ontimeout] (timers.js:110:15)
 ```
 
-And depending on the circumstances surrounding the error, your life may be less cheery as you try to track down where things went wrong. You don't have any feel for origination or end point. You just know that inside of a setTimeout - code crashed. 
+And depending on the circumstances surrounding the error, your life may be less cheery as you try to track down where things went wrong. You don't have any feel for origination or end point. You just know that inside of a setTimeout, your code crashed. 
 
 More over - you need to know that the code below is NOT a solution. It simply doesn't work in js:
 
@@ -123,15 +123,13 @@ Using try/catch instead of using checks is a bad practice:
     }
 ```    
 
-Why not?
-
-### Well, first and foremost, try/catch is slow. 
+### You might ask why? Well - first and foremost, try/catch is slow. 
 
 Here is a jsperf illustrating the tax of using try/catch inside of a repetitive look: http://jsperf.com/try-catch-performance-overhead. While it will vary from runtime to runtime, Chrome on windows shows a 40% tax for using an uneeded try catch.
 
-This is also a simple case where the exception condition never occurs. What happens if it did? Or if it did fairly regularly. Look at the results from this jsperf: http://jsperf.com/try-catch-vs-normal-check. Here that if the failure condition is hitting, (ie we're lazily using try/catch to validate input) we end up with nearly a 100% tax. While the try catch in the true condition add mild overhead, the failure cases are massively expenise. There's no need to generate an exception here. 
+This is also a simple case where the exception condition never occurs. What happens if it did? Or if it did fairly regularly? Look at the results from this jsperf: http://jsperf.com/try-catch-vs-normal-check. Here that if the failure condition is hitting, (ie we're lazily using try/catch to validate input) we end up with nearly a 100% tax. While the try catch in the true condition adds mild overhead, the failure cases are massively expensive. There's no need to generate an exception here.  v8 also at the time of this writing won't try to optimize a function containing a try/catch.
 
-### Secondly, try/catch tends to lead to a lot of antipatterns
+### Secondly, try/catch tends to lead to a lot of error handling antipatterns
  
 These fall into a few groups:
 
@@ -139,7 +137,7 @@ These fall into a few groups:
 * Anti-patterns in our approach to error handling
 * Anti-patterns around handling of exceptions in general. 
 
-Before we discuss anti-patterns let's discuss how we should approach error handling aka 
+Before we discuss anti-patterns let's discuss how we should approach error handling aka:
 
 ### It is (mostly) better for your program to crash
 
@@ -148,11 +146,11 @@ Taking a page from joyent's excellent guide on exceptions in node https://www.jo
     * Operational Problems
     * Programmer Errors
 
-Operational problems are things that could/might go wrong with your program that are generally outside of the programs control that you as a programmer need to think through and handle. There are generally many more of these 'things' in a server side environment, but the client isn't without it's fair share. For example, if you make a network request to a service and you fail to connect or it itself crashes in someway. This generally is not a bug with your code, it a problem with the system at large that your code is a part of.
+Operational problems are things that could/might go wrong with your program, that are generally outside of the program's control, that you as a programmer need to think through and handle. There are generally many more of these 'things' in a server side environment, but the client isn't without it's fair share. For example, on the server it could be running out some resource on the client you could make a network request to a service and you fail to connect. These are generally not bugs in your code. They a problems with the system at large that your code is a part of.
 
 Programmer errors are when you as a programmer have made a mistake and this has lead to undesirable behavior. For example a logic error or perhaps failing to handle a common operational problem. These are generally what we consider bugs (though not handling an operational error may look like a bug). 
 
-You absolutely MUST think through, understand and handle your programs potential operational problems, your error handling should be strucutured to deal with these problems. In some cases you will attempt to recover/retry from these errors. In other cases, the issues will be irrecoverable and your program should crash. 
+You absolutely MUST think through, understand and handle your programs potential operational problem's, your error handling should be structured to deal with these problems. In some cases you will attempt to recover/retry from these errors. In other cases, the issues will be irrecoverable and your program should crash. 
 
 On the other hand - you should absolutely NOT try to handle, recover or retry from programmer errors. A programmer or logic error has left your program in unknown state, you can't possibly know what it is and as such you should crash. At most you should attempt to dump information about error to log before crashing.
 
@@ -179,7 +177,7 @@ try{
     var b = a;
     console.log(b);
 }catch(e){
-console.log(e);
+    console.log(e);
 }
 ```
 
@@ -196,11 +194,11 @@ try{
     var b = modulea().foo();;
     console.log(b);
 }catch(e){
-console.log(e);
+    console.log(e);
 }
 ```
 
-Here we invoke modulea.foo();. Which let's say hypothetically calls moduleb.foo(), modulec.foo() and moduled.foo(). If you're a programmer working on 'moduled' and you're using this code to run your work, are all of your syntax errors in foo now being propogated up to main call?  Worse, if this is your caller do you have to consider that any and all of your errors are going to be swallowed and logged by this code? What if someone did this midstream? Aka, what if our code above is actually in moduleb? At this point the error has been completely and inadvertently swallowed. If this has happened to you as a developer working on a large program you recognize that it is in fact, rage-inducing. 
+Here we invoke modulea.foo();. Which let's say hypothetically calls moduleb.foo(), modulec.foo() and moduled.foo(). If you're a programmer working on 'moduled' and you're using this code to run your work, are all of your syntax errors in foo now being propogated up to main call?  Worse, if this is your caller do you have to consider that any and all of your errors are going to be swallowed and logged by this code? What if someone did this midstream? What if our code above is actually in moduleb? At this point the error has been completely and inadvertently swallowed. If this has happened to you as a developer working on a large program, you recognize that it is in fact, rage-inducing. 
 
 ### Anti-patterns in our approach to error handling
 
@@ -217,7 +215,7 @@ return new Error('a thing when wrong');
 
 * Return an error in a node style callback 
 
-The Joyent article referenced above mentions that the exception to this general rule is probably when you encounter an irrecoverable programmer error at the time of a call to your function that will be harder to track down later. For these types of errors, throw right away. I was on the fence about this for a while, but I've come around. An example:
+Consider this code:
 
 ```
 function anAsyncAction(data, cb){
@@ -233,12 +231,11 @@ function anAsyncAction(data, cb){
     }
 }
 ```
-
-Here, if cb was undefined we would end up with a crash inside of the doAsyncThing callback anyway. Here it is generally better to just crash via a throw. 
+You'll notice I'm using throw here as well.  The Joyent article referenced above mentions that the exception to this general rule is probably when you encounter an irrecoverable programmer error at the time of a call to your function that will be harder to track down later. For these types of errors, throw right away. I was on the fence about this for a while, but I've come around. Here, if cb was undefined we would end up with a crash inside of the doAsyncThing callback anyway. Here it is generally better to just crash via a throw. Otherwise we deliver err to the call back.
 
 * Use an event emitter 
 
-todo - this requires a bit more research on my end for environements outside of nodejs - I will follow up.
+todo - this requires a bit more research on my end for environments outside of nodejs - I will follow up.
 
 * Use a promise
 
@@ -261,11 +258,11 @@ promise.then(function(res){
 });
 ```
 
-This code makes me happy. Depending on the library you use it's very fast (see Bluebird's benchmarks), it is as expressive as try/catch and allows you to target specific error conditions, it handles async as elegantly as can be expected without domains + handles sync conditions via the same semantic. 
+This code makes me happy. Depending on the library you use it's very fast (see [https://github.com/petkaantonov/bluebird]Bluebird's benchmarks), it is as expressive as try/catch and allows you to target specific error conditions, it handles async as elegantly as can be expected without domains + handles sync conditions via the same semantic. 
 
 #### Using primitives instead of error objects
 
-Don't do this. A very easy demonstration of why can be seen by running this in node:
+A very easy demonstration of why you shouldn't do this can be seen by running the following in node:
 
 ```
 throw "hi";
@@ -301,7 +298,7 @@ Error: hi
     at ReadStream.onkeypress (readline.js:99:10)
 ```
 
-If that doesn't convince you, don't take my word for it - consider from the author of Bluebird promises who boasts an impressive 76.4k stack overflow score:
+If that doesn't convince you, don't take my word for it - consider from the author of Bluebird promises who boasts an impressive [http://stackoverflow.com/users/995876/esailija] 76.4k stack overflow score:
 
 ```
 Danger: The JavaScript language allows throwing primitive values like strings. Throwing primitives can lead to worse or no stack traces. Primitives are not exceptions. You should consider always throwing Error objects when handling exceptions.
@@ -402,8 +399,7 @@ Sometimes I've seen cases in sync or async code where an error occurs and the de
 
 ```
 
-Which is generally okay, save for the fact that no one seems to be keeping track of 'err'. It's find to tie things up, but be sure the error you received 'can be tied up' in the way you think and at teh very least track/log the error so you can figure out what happened (or even that something happened at all!). This can happen with promises as well if you ignore the output of a catch and in server side code where you receive an error and return something line 500 to the caller without logging the cause. 
-
+Which is generally okay, save for the fact that no one seems to be keeping track of 'err'. It's fine to tie things up for the end user, but be sure the error you received 'can be tied up' in the way you think and at the very least track/log the error so you can figure out what happened (or even that something happened at all!). This can happen with promises as well if you ignore the output of a catch and in server side code where you receive an error and return something line 500 to the caller without logging the cause. 
 
 #### Assuming an Error is a primitive
 
@@ -436,7 +432,7 @@ Any stack we might have gotten via 'e' is lost once it is treated as a string. I
 
 #### Using the same error handlers for rejection vs error in promises
 
-When using promises, you probably are going to want to handle unforseen problems differently then any and all errors. As such, I tend to forgo the use of .catch at all and allow my program to crash if an unknown error occurs. But if in theory you have thought out your promise rejection cases, then passing any and all errors into the same case is probably a bad idea. As such things like I've illustrated below is probably not the best idea. A better idea is to handle your rejection cases explicitly and funnel unknowns or specific error types somewhere else (.catch or .catch(ErrorType
+When using promises, you probably are going to want to handle unforseen problems differently then any and all errors. As such, I tend to forgo the use of .catch at all and allow my program to crash if an unknown error occurs. But if in theory you have thought out your promise rejection cases, then passing any and all errors into the same case is probably a bad idea. As such things like I've illustrated below is probably not the best idea. A better idea is to handle your rejection cases explicitly and funnel unknowns or specific error types somewhere else (.catch or .catch(ErrorType). I guess the excusable case would be if handleError was checking for specific error types via instanceof, but promises do that for you and they're more readable, so use them.
 
 ```javascript
 promise.then(function(res){
