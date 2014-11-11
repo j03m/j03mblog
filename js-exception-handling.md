@@ -1,3 +1,7 @@
+# Exception + Error handling in javascript
+
+The following will walk through the basics of exceptions and errors in javascript. Most of the article will go over the basics of structuring your code for errors in a sync/async world and go over some patterns and anti-patterns you should be aware of while writing js.
+
 ## I suppose the first thing you need to understand are basic problems with stack traces in js.
 
 Look at this scenario:
