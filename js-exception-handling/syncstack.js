@@ -1,3 +1,5 @@
+throw "hi";
+
 function a(){
     b();
 }

@@ -1,7 +1,6 @@
 var mb = require('./getfile.js');
 
 try{
-
     mb.getFile('test.txt', function(err, res){
         if (err){
             logAndDie(err);
@@ -19,3 +18,12 @@ function logAndDie(e){
     console.log("Error: " + e.message + " stack:" + e.stack);
 
 }
+
+
+worker.sendRequest().error(function(e){
+    if (e instanceof FileNotFoundError){
+        //do this
+    }
+
+
+})
