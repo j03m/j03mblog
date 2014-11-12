@@ -528,3 +528,4 @@ rejected: { name: 'OperationalError',
   stack: 'Error: ENOENT, open \'\\scratchboard\\require.js\'' }
  ```
 
+Note if you remove the .catch clause from the code but leave console.log(a) in, the code will crash, which is what we want as this is a programmer, NOT an operational error.
