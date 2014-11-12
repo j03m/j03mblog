@@ -491,7 +491,7 @@ var Promise = require('bluebird');
 var fs = require('fs');
 function readFileWrapper(file, cb){
     console.log("reading:", file);
-    throw "how now brown cow?";
+    console.log(a);
     if (!cb){
         throw new Error("Call back required.");
     }
