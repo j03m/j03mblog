@@ -484,5 +484,47 @@ promise.then(function(res){
 });
 ```
 
+Here is a very concrete example of why you shouldn't use catch:
 
+```javascript
+var Promise = require('bluebird');
+var fs = require('fs');
+function readFileWrapper(file, cb){
+    console.log("reading:", file);
+    throw "how now brown cow?";
+    if (!cb){
+        throw new Error("Call back required.");
+    }
+    fs.readFile(file,cb);
+}
+ 
+var readFileP = Promise.promisify(readFileWrapper);
+var p = readFileP('require.js');
+p.then(function(data){
+    console.log(data);
+}).error(function(err){
+    console.log('rejected:', err);
+}).catch(function(err){
+   console.log('boom:', err);
+});
+```
+
+If you were to run this code, you will get:
+```
+reading: require.js
+boom: [ReferenceError: a is not defined]
+```
+
+Again congrats, as we demonstrated above with try/catch your code just caught and continued in the face of a syntax error. Catch is promises exists for the same reason that catch in try/catch exists. It captures any and all errors it can possibly catch. It also like, try/catch cannot catch rogue async errors (see Promise aggregation and async errors with Bluebird). As such .catch in promises is JUST as dangerous as catch in try/catch. If you want to handle rejections, use .error instead. Note, when the console.log(a); ReferenceError is removed from the above code, you get a reference error for reject-able expected operational failure cases: 
+
+```javascript
+rejected: { name: 'OperationalError',
+  message: 'ENOENT, open \'\\scratchboard\\require.js\'',
+  cause:
+   { [Error: ENOENT, open '\\scratchboard\require.js']
+     errno: 34,
+     code: 'ENOENT',
+     path: '\\scratchboard\\require.js' },
+  stack: 'Error: ENOENT, open \'\\scratchboard\\require.js\'' }
+ ```
 
