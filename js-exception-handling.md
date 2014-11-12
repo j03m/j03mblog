@@ -326,6 +326,36 @@ Error: hi
     at ReadStream.onkeypress (readline.js:99:10)
 ```
 
+An even better approach is to consider wrapping errors and/or extending your own error types that you can check for via instanceof. This is useful when using promises patterns. Here is an example from Bluebird.js where they define an OperationalError (previously RejectionError).
+
+```javascript
+function OperationalError(message) {
+    this.name = "OperationalError";
+    this.message = message;
+    this.cause = message;
+    this[OPERATIONAL_ERROR_KEY] = true;
+
+    if (message instanceof Error) {
+        this.message = message.message;
+        this.stack = message.stack;
+    } else if (Error.captureStackTrace) {
+        Error.captureStackTrace(this, this.constructor);
+    }
+}
+```
+Here you can see they check if the supplied input is itself an Error object with a stack trace. Otherwise it assumes primitive and captures it's own stacktrace. This is a good pattern for wrapping errors. 
+In addition, doing something like this allow for cases down the line where you can use instanceof to check error types and react accordingly:
+
+```javascript
+   if (e instanceof MyError){
+      //dump stack, retry
+      console.log("MyError:", e.stack);
+      doRetry();
+   }else{
+      throw e; //We don't know what this is, crash.
+   }
+```
+
 ### Anti-patterns around handling of exceptions in general. 
 
 This will probably be the longest section as I'll walk through some of the bad things I've seen in production code and explain a bit why it causes problems. 
