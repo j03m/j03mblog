@@ -462,9 +462,10 @@ Any stack we might have gotten via 'e' is lost once it is treated as a string. I
 
 #### Using the same error handlers for rejection vs error in promises - aka BE CAREFUL with CATCH because well its CATCH
 
-When using promises, you probably are going to want to handle unforseen problems differently then any and all errors. As such, I tend to forgo the use of .catch at all and allow my program to crash if an unknown error occurs. But if in theory you have thought out your promise rejection cases, then passing any and all errors into the same case is probably a bad idea. As such things like I've illustrated below is probably not the best idea. A better idea is to handle your rejection cases explicitly and funnel unknowns or specific error types somewhere else (.catch or .catch(ErrorType). I guess the excusable case would be if handleError was checking for specific error types via instanceof, but promises do that for you and they're more readable, so use them.
+When using promises, you probably are going to want to handle unforseen problems differently then any and all errors. As such, I tend to forgo the use of .catch at all and allow my program to crash if an unknown error occurs. If you have thought out your promise rejection cases, then passing any and all errors into the same case is a bad idea.  A better idea is to handle your rejection cases explicitly and funnel unknowns or specific error types somewhere else (.catch or .catch(ErrorType). I guess the excusable case would be if handleError was checking for specific error types via instanceof, but promises do that for you and they're more readable, so use them.
 
 ```javascript
+//bad idea
 promise.then(function(res){
     //..
 }).catch(function(err){
@@ -475,6 +476,7 @@ promise.then(function(res){
 or
 
 ```javascript
+//bad idea
 promise.then(function(res){
     //..
 }).error(function(err){
